@@ -41,7 +41,6 @@ jobs:
     with:
       android_version: "android13"
       kernel_version: "5.10"
-      debug: true
       sub_level: ${{ matrix.sub_level }}
       os_patch_level: ${{ matrix.os_patch_level }}
       runner: ${{ inputs.runner }}
