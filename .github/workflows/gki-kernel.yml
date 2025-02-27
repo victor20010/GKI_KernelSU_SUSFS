@@ -285,7 +285,7 @@ jobs:
       - name: Add SUSFS Configuration Settings
         run: |
           echo "Changing to configuration directory: $CONFIG..."
-          cd "$CONFIG"
+          cd "$CONFIG" || exit 1
 
           echo "Adding configuration settings to gki_defconfig..."
 
@@ -310,62 +310,45 @@ jobs:
           echo "CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG=y" >> ./common/arch/arm64/configs/gki_defconfig
           echo "CONFIG_KSU_SUSFS_OPEN_REDIRECT=y" >> ./common/arch/arm64/configs/gki_defconfig
           echo "CONFIG_KSU_SUSFS_SUS_SU=n" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_KSU_ALLOWLIST_WORKAROUND=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_KSU_DEBUG=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_BPF_PRELOAD=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_BPF_LSM=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_BPF_STREAM_PARSER=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_BPFILTER=y" >> ./common/arch/arm64/configs/gki_defconfig
 
-          # Add additional tmpfs config setting
+          # Add additional tmpfs config settings
           echo "CONFIG_TMPFS_XATTR=y" >> ./common/arch/arm64/configs/gki_defconfig
           echo "CONFIG_TMPFS_POSIX_ACL=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_SECURITY=y" >> ./common/arch/arm64/configs/gki_defconfig
 
-          # Add additional tmpfs config setting
+          # Add additional IP netfilter config settings
           echo "CONFIG_IP_NF_TARGET_TTL=y" >> ./common/arch/arm64/configs/gki_defconfig
           echo "CONFIG_IP6_NF_TARGET_HL=y" >> ./common/arch/arm64/configs/gki_defconfig
           echo "CONFIG_IP6_NF_MATCH_HL=y" >> ./common/arch/arm64/configs/gki_defconfig
 
+          # Update gki_defconfig with sed replacements
+          sed -i 's/CONFIG_USB_CONFIGFS_MASS_STORAGE=n/CONFIG_USB_CONFIGFS_MASS_STORAGE=y/' ./common/arch/arm64/configs/gki_defconfig
+          sed -i 's/# CONFIG_USB_CONFIGFS_MASS_STORAGE is not set/CONFIG_USB_CONFIGFS_MASS_STORAGE=y/' ./common/arch/arm64/configs/gki_defconfig
+          sed -i 's/CONFIG_DEBUG_KERNEL=n/CONFIG_DEBUG_KERNEL=y/' ./common/arch/arm64/configs/gki_defconfig
+          sed -i 's/# CONFIG_DEBUG_KERNEL is not set/CONFIG_DEBUG_KERNEL=y/' ./common/arch/arm64/configs/gki_defconfig
+          sed -i 's/CONFIG_UPROBES=n/CONFIG_UPROBES=y/' ./common/arch/arm64/configs/gki_defconfig
+          sed -i 's/# CONFIG_UPROBES is not set/CONFIG_UPROBES=y/' ./common/arch/arm64/configs/gki_defconfig
+          sed -i 's/CONFIG_BPF_STREAM_PARSER=n/CONFIG_BPF_STREAM_PARSER=y/' ./common/arch/arm64/configs/gki_defconfig
+          sed -i 's/# CONFIG_BPF_STREAM_PARSER is not set/CONFIG_BPF_STREAM_PARSER=y/' ./common/arch/arm64/configs/gki_defconfig
+          sed -i 's/CONFIG_BPF_LSM=n/CONFIG_BPF_LSM=y/' ./common/arch/arm64/configs/gki_defconfig
+          sed -i 's/# CONFIG_BPF_LSM is not set/CONFIG_BPF_LSM=y/' ./common/arch/arm64/configs/gki_defconfig
+          sed -i 's/CONFIG_SECURITY_SELINUX_BOOTPARAM=n/CONFIG_SECURITY_SELINUX_BOOTPARAM=y/' ./common/arch/arm64/configs/gki_defconfig
+          sed -i 's/# CONFIG_SECURITY_SELINUX_BOOTPARAM is not set/CONFIG_SECURITY_SELINUX_BOOTPARAM=y/' ./common/arch/arm64/configs/gki_defconfig
+          sed -i 's/CONFIG_SECURITY_SELINUX_DEVELOP=n/CONFIG_SECURITY_SELINUX_DEVELOP=y/' ./common/arch/arm64/configs/gki_defconfig
+          sed -i 's/# CONFIG_SECURITY_SELINUX_DEVELOP is not set/CONFIG_SECURITY_SELINUX_DEVELOP=y/' ./common/arch/arm64/configs/gki_defconfig
+          sed -i 's/CONFIG_SECURITY_SELINUX_CHECKREQPROT_VALUE=n/CONFIG_SECURITY_SELINUX_CHECKREQPROT_VALUE=y/' ./common/arch/arm64/configs/gki_defconfig
+          sed -i 's/# CONFIG_SECURITY_SELINUX_CHECKREQPROT_VALUE is not set/CONFIG_SECURITY_SELINUX_CHECKREQPROT_VALUE=y/' ./common/arch/arm64/configs/gki_defconfig
+
           # Remove check_defconfig
           sed -i 's/check_defconfig//' ./common/build.config.gki
-      
-      - name: Modify Kernel Configurations
-        run: |
-          echo "Changing to configuration directory: $CONFIG..."
-          cd "$CONFIG"
 
-          CONFIG_FILE="./common/arch/arm64/configs/gki_defconfig"
-          echo "[+] Modifying kernel configuration in $CONFIG_FILE"
-          
-          declare -a sed_commands=(
-            "s/CONFIG_USB_CONFIGFS_MASS_STORAGE=n/CONFIG_USB_CONFIGFS_MASS_STORAGE=y/"
-            "s/# CONFIG_USB_CONFIGFS_MASS_STORAGE is not set/CONFIG_USB_CONFIGFS_MASS_STORAGE=y/"
-            "s/CONFIG_DEBUG_KERNEL=n/CONFIG_DEBUG_KERNEL=y/"
-            "s/# CONFIG_DEBUG_KERNEL is not set/CONFIG_DEBUG_KERNEL=y/"
-            "s/CONFIG_UPROBES=n/CONFIG_UPROBES=y/"
-            "s/# CONFIG_UPROBES is not set/CONFIG_UPROBES=y/"
-            "s/CONFIG_BPF_STREAM_PARSER=n/CONFIG_BPF_STREAM_PARSER=y/"
-            "s/# CONFIG_BPF_STREAM_PARSER is not set/CONFIG_BPF_STREAM_PARSER=y/"
-            "s/CONFIG_BPF_LSM=n/CONFIG_BPF_LSM=y/"
-            "s/# CONFIG_BPF_LSM is not set/CONFIG_BPF_LSM=y/"
-            #"s/CONFIG_BPF_KPROBE_OVERRIDE=n/CONFIG_BPF_KPROBE_OVERRIDE=y/"
-            #"s/# CONFIG_BPF_KPROBE_OVERRIDE is not set/CONFIG_BPF_KPROBE_OVERRIDE=y/"
-            "s/CONFIG_SECURITY_SELINUX_BOOTPARAM=n/CONFIG_SECURITY_SELINUX_BOOTPARAM=y/"
-            "s/# CONFIG_SECURITY_SELINUX_BOOTPARAM is not set/CONFIG_SECURITY_SELINUX_BOOTPARAM=y/"
-            "s/CONFIG_SECURITY_SELINUX_DEVELOP=n/CONFIG_SECURITY_SELINUX_DEVELOP=y/"
-            "s/# CONFIG_SECURITY_SELINUX_DEVELOP is not set/CONFIG_SECURITY_SELINUX_DEVELOP=y/"
-            "s/CONFIG_SECURITY_SELINUX_CHECKREQPROT_VALUE=n/CONFIG_SECURITY_SELINUX_CHECKREQPROT_VALUE=y/"
-            "s/# CONFIG_SECURITY_SELINUX_CHECKREQPROT_VALUE is not set/CONFIG_SECURITY_SELINUX_CHECKREQPROT_VALUE=y/"
-            "s/CONFIG_KSU_DEBUG=n/CONFIG_KSU_DEBUG=y/"
-            "s/# CONFIG_KSU_DEBUG is not set/CONFIG_KSU_DEBUG=y/"
-          )
 
-          # Применяем все sed команды
-          for cmd in "${sed_commands[@]}"; do
-            sed -i "$cmd" "$CONFIG_FILE" || echo "Ignoring failed substitution: $cmd"
-          done
-
-          # Добавляем необходимые зависимости для BPF_LSM
-          echo "CONFIG_LSM=\"lockdown,yama,selinux,bpf\"" >> "$CONFIG_FILE"
-          echo "CONFIG_SECURITY=y" >> "$CONFIG_FILE"
-          echo "CONFIG_SECURITYFS=y" >> "$CONFIG_FILE"
-
-          # Для файла .config (генерируется позже)
-          echo "[!] Note: .config modifications should be done after configuration generation"
 
       - name: Config Kernel Name
         run: |
