@@ -327,7 +327,7 @@ jobs:
           )
 
           # Путь к конфигурациям
-          KERNEL_CONFIG="./init/Kconfig.gki"
+          KERNEL_CONFIG="./common/init/Kconfig.gki"
           GKI_DECONFIG="./common/arch/arm64/configs/gki_defconfig"
 
           # Обработка настроек конфигурации 📌
