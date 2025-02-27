@@ -282,18 +282,15 @@ jobs:
           cp ../../kernel_patches/69_hide_stuff.patch ./
           patch -p1 -F 3 < 69_hide_stuff.patch
             
-
       - name: Add SUSFS Configuration Settings
         run: |
           echo "Changing to configuration directory: $CONFIG..."
           cd "$CONFIG"
 
           sed -i '$s|echo "\$res"|echo "\$res-Wild+"|' ./common/scripts/setlocalversion
-
-          # Run perl command to modify UTS_VERSION
           perl -pi -e 's{UTS_VERSION=".*"}{UTS_VERSION="#1 SMP PREEMPT Sat Apr 20 04:20:00 UTC 2024"}' ./common/scripts/mkcompile_h
 
-          # Добавление конфигураций из CONFIG_SETTINGS
+    
           CONFIG_SETTINGS=(
             "CONFIG_KSU_SUSFS,y"
             "CONFIG_KSU_SUSFS_HAS_MAGIC_MOUNT,y"
@@ -304,59 +301,46 @@ jobs:
             "CONFIG_KSU_SUSFS_SUS_KSTAT,y"
             "CONFIG_KSU_SUSFS_SUS_OVERLAYFS,y"
             "CONFIG_KSU_SUSFS_TRY_UMOUNT,y"
-            "CONFIG_KSU_SUSFS_AUTO_ADD_TRY_UMOUNT_FOR_BIND_MOUNT,y"
-            "CONFIG_KSU_SUSFS_SPOOF_UNAME,y"
-            "CONFIG_KSU_SUSFS_ENABLE_LOG,y"
-            "CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS,y"
-            "CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOT,y"
-            "CONFIG_KSU_SUSFS_OPEN_REDIRECT,y"
-            "CONFIG_KSU_SUSFS_SUS_SU,y"
-            "CONFIG_KSU_ALLOWLIST_WORKAROUND,y"
-            "CONFIG_KSU_DEBUG,y"
-            "CONFIG_BPF_PRELOAD,y"
-            "CONFIG_BPF_LSM,y"
-            "CONFIG_BPF_STREAM_PARSER,y"
-            "CONFIG_BPFILTER,y"
-            "CONFIG_TMPFS_XATTR,y"
-            "CONFIG_TMPFS_POSIX_ACL,y"
-            "CONFIG_SECURITY,y"
-            "CONFIG_IP_NF_TARGET_TTL,y"
-            "CONFIG_IP6_NF_TARGET_HL,y"
-            "CONFIG_IP6_NF_MATCH_HL,y"
-          )
+      "CONFIG_KSU_SUSFS_AUTO_ADD_TRY_UMOUNT_FOR_BIND_MOUNT,y"
+      "CONFIG_KSU_SUSFS_SPOOF_UNAME,y"
+      "CONFIG_KSU_SUSFS_ENABLE_LOG,y"
+      "CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS,y"
+      "CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOT,y"
+      "CONFIG_KSU_SUSFS_OPEN_REDIRECT,y"
+      "CONFIG_KSU_SUSFS_SUS_SU,y"
+      "CONFIG_KSU_ALLOWLIST_WORKAROUND,y"
+      "CONFIG_KSU_DEBUG,y"
+      "CONFIG_BPF_PRELOAD,y"
+      "CONFIG_BPF_LSM,y"
+      "CONFIG_BPF_STREAM_PARSER,y"
+      "CONFIG_BPFILTER,y"
+      "CONFIG_TMPFS_XATTR,y"
+      "CONFIG_TMPFS_POSIX_ACL,y"
+      "CONFIG_SECURITY,y"
+      "CONFIG_IP_NF_TARGET_TTL,y"
+      "CONFIG_IP6_NF_TARGET_HL,y"
+      "CONFIG_IP6_NF_MATCH_HL,y"
+    )
 
-          # Путь к конфигурациям
-          KERNEL_CONFIG="./common/init/Kconfig.gki"
-          GKI_DECONFIG="./common/arch/arm64/configs/gki_defconfig"
+    GKI_DECONFIG="./common/arch/arm64/configs/gki_defconfig"
 
-          # Обработка настроек конфигурации 📌
-          for CONFIG_SETTING in "${CONFIG_SETTINGS[@]}"; do
-            IFS=',' read -r CONFIG_NAME VALUE <<< "$CONFIG_SETTING"
-            VALUE="${VALUE// /}"  # Удалить пробелы
+    # Обработка конфигурационных настроек
+    for CONFIG_SETTING in "${CONFIG_SETTINGS[@]}"; do
+      IFS=',' read -r CONFIG_NAME VALUE <<< "${CONFIG_SETTING}"
+      VALUE="${VALUE// /}"  # Удаление пробелов
 
-            # Обновить Kconfig
-            if ! grep -q "^config $CONFIG_NAME" "$KERNEL_CONFIG"; then
-              echo "config $CONFIG_NAME" >> "$KERNEL_CONFIG"
-              echo "    bool" >> "$KERNEL_CONFIG"
-              echo "    default $VALUE" >> "$KERNEL_CONFIG"
-              echo "    help" >> "$KERNEL_CONFIG"
-              echo "      Enable $CONFIG_NAME" >> "$KERNEL_CONFIG"
-            fi
+      # Обновление GKI_DECONFIG
+      if grep -q "^${CONFIG_NAME}=" "$GKI_DECONFIG"; then
+        sed -i "s/^${CONFIG_NAME}=.*/${CONFIG_NAME}=${VALUE:-y}/" "$GKI_DECONFIG"
+      else
+        echo "${CONFIG_NAME}=${VALUE:-y}" >> "$GKI_DECONFIG"
+      fi
+    done
 
-            # Обновить defconfig с переопределением 🔄
-            if grep -q "^$CONFIG_NAME=" "$GKI_DECONFIG"; then
-              sed -i "s/^$CONFIG_NAME=.*/$CONFIG_NAME=$VALUE/" "$GKI_DECONFIG"
-            else
-              echo "$CONFIG_NAME=$VALUE" >> "$GKI_DECONFIG"
-            fi
-          done
-
-          # Удалить check_defconfig безопасно 🔄
-          if grep -q "check_defconfig" ./common/build.config.gki; then
-            sed -i '/check_defconfig/d' ./common/build.config.gki
-          fi
-
-
+    # Безопасное удаление check_defconfig
+    if grep -q "check_defconfig" ./common/build.config.gki; then
+      sed -i '/check_defconfig/d' ./common/build.config.gki
+    fi
 
       - name: Config Kernel Name
         run: |
