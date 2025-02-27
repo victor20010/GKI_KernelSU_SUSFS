@@ -105,17 +105,34 @@ jobs:
           echo "MKBOOTIMG=$GITHUB_WORKSPACE/mkbootimg/mkbootimg.py" >> $GITHUB_ENV
           echo "UNPACK_BOOTIMG=$GITHUB_WORKSPACE/mkbootimg/unpack_bootimg.py" >> $GITHUB_ENV
 
-      - name: Set boot sign key
-        env:
-          BOOT_SIGN_KEY: ${{ secrets.BOOT_SIGN_KEY }}
+      - name: Setup BPF build environment
         run: |
-          if [ ! -z "$BOOT_SIGN_KEY" ]; then
-            echo "$BOOT_SIGN_KEY" > ./kernel-build-tools/linux-x86/share/avb/testkey_rsa2048.pem
-            echo "BOOT_SIGN_KEY_PATH=$GITHUB_WORKSPACE/kernel-build-tools/linux-x86/share/avb/testkey_rsa2048.pem" >> $GITHUB_ENV
-          else
-            echo "BOOT_SIGN_KEY is not set. Exiting..."
-            exit 1
-          fi
+          sudo apt-get update
+          sudo apt-get install -y \
+            llvm \
+            clang \
+            libelf-dev \
+            libcap-dev \
+            zstd \
+            python3-docutils \
+            libssl-dev \
+            pahole \
+            bison \
+            flex
+          
+          # Set LLVM version (using default from apt)
+          LLVM_VERSION=$(llvm-config --version | cut -d '.' -f 1)
+          echo "LLVM_VERSION=$LLVM_VERSION" >> $GITHUB_ENV
+          echo "PATH=/usr/lib/llvm-$LLVM_VERSION/bin:$PATH" >> $GITHUB_ENV
+
+      - name: Set boot sign key
+        run: |
+          set -e
+          KEY_PATH="$GITHUB_WORKSPACE/kernel-build-tools/linux-x86/share/avb/testkey_rsa2048.pem"
+          echo "Generating boot sign key..."
+          mkdir -p "$(dirname "$KEY_PATH")"
+          openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out "$KEY_PATH"
+          echo "BOOT_SIGN_KEY_PATH=$KEY_PATH" >> $GITHUB_ENV
 
       - name: Install Repo
         run: |
@@ -305,6 +322,50 @@ jobs:
 
           # Remove check_defconfig
           sed -i 's/check_defconfig//' ./common/build.config.gki
+      
+      - name: Modify Kernel Configurations
+        run: |
+          echo "Changing to configuration directory: $CONFIG..."
+          cd "$CONFIG"
+
+          CONFIG_FILE="./common/arch/arm64/configs/gki_defconfig"
+          echo "[+] Modifying kernel configuration in $CONFIG_FILE"
+          
+          declare -a sed_commands=(
+            "s/CONFIG_USB_CONFIGFS_MASS_STORAGE=n/CONFIG_USB_CONFIGFS_MASS_STORAGE=y/"
+            "s/# CONFIG_USB_CONFIGFS_MASS_STORAGE is not set/CONFIG_USB_CONFIGFS_MASS_STORAGE=y/"
+            "s/CONFIG_DEBUG_KERNEL=n/CONFIG_DEBUG_KERNEL=y/"
+            "s/# CONFIG_DEBUG_KERNEL is not set/CONFIG_DEBUG_KERNEL=y/"
+            "s/CONFIG_UPROBES=n/CONFIG_UPROBES=y/"
+            "s/# CONFIG_UPROBES is not set/CONFIG_UPROBES=y/"
+            "s/CONFIG_BPF_STREAM_PARSER=n/CONFIG_BPF_STREAM_PARSER=y/"
+            "s/# CONFIG_BPF_STREAM_PARSER is not set/CONFIG_BPF_STREAM_PARSER=y/"
+            "s/CONFIG_BPF_LSM=n/CONFIG_BPF_LSM=y/"
+            "s/# CONFIG_BPF_LSM is not set/CONFIG_BPF_LSM=y/"
+            "s/CONFIG_BPF_KPROBE_OVERRIDE=n/CONFIG_BPF_KPROBE_OVERRIDE=y/"
+            "s/# CONFIG_BPF_KPROBE_OVERRIDE is not set/CONFIG_BPF_KPROBE_OVERRIDE=y/"
+            "s/CONFIG_SECURITY_SELINUX_BOOTPARAM=n/CONFIG_SECURITY_SELINUX_BOOTPARAM=y/"
+            "s/# CONFIG_SECURITY_SELINUX_BOOTPARAM is not set/CONFIG_SECURITY_SELINUX_BOOTPARAM=y/"
+            "s/CONFIG_SECURITY_SELINUX_DEVELOP=n/CONFIG_SECURITY_SELINUX_DEVELOP=y/"
+            "s/# CONFIG_SECURITY_SELINUX_DEVELOP is not set/CONFIG_SECURITY_SELINUX_DEVELOP=y/"
+            "s/CONFIG_SECURITY_SELINUX_CHECKREQPROT_VALUE=n/CONFIG_SECURITY_SELINUX_CHECKREQPROT_VALUE=y/"
+            "s/# CONFIG_SECURITY_SELINUX_CHECKREQPROT_VALUE is not set/CONFIG_SECURITY_SELINUX_CHECKREQPROT_VALUE=y/"
+            "s/CONFIG_KSU_DEBUG=n/CONFIG_KSU_DEBUG=y/"
+            "s/# CONFIG_KSU_DEBUG is not set/CONFIG_KSU_DEBUG=y/"
+          )
+
+          # Применяем все sed команды
+          for cmd in "${sed_commands[@]}"; do
+            sed -i "$cmd" "$CONFIG_FILE" || echo "Ignoring failed substitution: $cmd"
+          done
+
+          # Добавляем необходимые зависимости для BPF_LSM
+          echo "CONFIG_LSM=\"lockdown,yama,integrity,bpf\"" >> "$CONFIG_FILE"
+          echo "CONFIG_SECURITY=y" >> "$CONFIG_FILE"
+          echo "CONFIG_SECURITYFS=y" >> "$CONFIG_FILE"
+
+          # Для файла .config (генерируется позже)
+          echo "[!] Note: .config modifications should be done after configuration generation"
 
       - name: Config Kernel Name
         run: |
@@ -477,4 +538,4 @@ jobs:
           name: kernel-${{ env.CONFIG }}
           path: |
             *.zip
-            *.img
+            *.img          
