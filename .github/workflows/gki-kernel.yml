@@ -285,13 +285,17 @@ jobs:
 
       - name: Add SUSFS Configuration Settings
         run: |
-          echo "Changing to configuration directory: $CONFIG..."
-          cd "$CONFIG" || exit 1
 
-          # Updated SUSFS configuration with proper formatting 🔄
+          echo "Changing to configuration directory: $CONFIG..."
+          cd "$CONFIG"
+
+          sed -i '$s|echo "\$res"|echo "\$res-Wild+"|' ./common/scripts/setlocalversion
+
+          # Run perl command to modify UTS_VERSION
+          perl -pi -e 's{UTS_VERSION=".*"}{UTS_VERSION="#1 SMP PREEMPT Sat Apr 20 04:20:00 UTC 2024"}' ./common/scripts/mkcompile_h
+
+          # Добавление конфигураций из CONFIG_SETTINGS
           CONFIG_SETTINGS=(
-           "CONFIG_KSU,y"
-            "CONFIG_KSU_WITH_KPROBES,n"
             "CONFIG_KSU_SUSFS,y"
             "CONFIG_KSU_SUSFS_HAS_MAGIC_MOUNT,y"
             "CONFIG_KSU_SUSFS_SUS_PATH,y"
@@ -322,43 +326,34 @@ jobs:
             "CONFIG_IP6_NF_MATCH_HL,y"
           )
 
-          # Set config paths based on variant 📌
-          case "${{ inputs.kernelsu_variant }}" in
-            "Official") KERNEL_CONFIG="./KernelSU/kernel/kconfig" ;;
-            "Next") KERNEL_CONFIG="./KernelSU-Next/kernel/kconfig" ;;
-            "MKSU") KERNEL_CONFIG="./KernelSU/kernel/kconfig" ;;
-                *) echo "Error: Invalid KernelSU variant"; exit 1 ;;
-          esac
-
+          # Путь к конфигурациям
+          KERNEL_CONFIG="./init/Kconfig.gki"
           GKI_DECONFIG="./common/arch/arm64/configs/gki_defconfig"
 
-          # Validate config files exist 🔄
-          if [[ ! -f "$KERNEL_CONFIG" || ! -f "$GKI_DECONFIG" ]]; then
-            echo "::error::Missing configuration files"
-            exit 1
-          fi
-
-          # Process configuration settings 📌
+          # Обработка настроек конфигурации 📌
           for CONFIG_SETTING in "${CONFIG_SETTINGS[@]}"; do
             IFS=',' read -r CONFIG_NAME VALUE <<< "$CONFIG_SETTING"
-            VALUE="${VALUE// /}"  # Remove whitespace
+            VALUE="${VALUE// /}"  # Удалить пробелы
 
-          # Update kernel config
-          if ! grep -q "^config $CONFIG_NAME" "$KERNEL_CONFIG"; then
-            echo -e "config $CONFIG_NAME\n    bool \"$VALUE\"\n    default y\n    help \"\"\n" >> "$KERNEL_CONFIG"
-          fi
+            # Обновить Kconfig
+            if ! grep -q "^config $CONFIG_NAME" "$KERNEL_CONFIG"; then
+              echo -e "config $CONFIG_NAME\n    bool\n    default $VALUE\n    help \"\"\n" >> "$KERNEL_CONFIG"
+            fi
 
-          # Update defconfig with override 🔄
-          if grep -q "^$CONFIG_NAME=" "$GKI_DECONFIG"; then
-            sed -i "s/^$CONFIG_NAME=.*/$CONFIG_NAME=${VALUE:-y}/" "$GKI_DECONFIG"
-          else
-            echo "$CONFIG_NAME=${VALUE:-y}" >> "$GKI_DECONFIG"
-          fi
+            # Обновить defconfig с переопределением 🔄
+            if grep -q "^$CONFIG_NAME=" "$GKI_DECONFIG"; then
+                    sed -i "s/^$CONFIG_NAME=.*/$CONFIG_NAME=$VALUE/" "$GKI_DECONFIG"
+            else
+                    echo "$CONFIG_NAME=$VALUE" >> "$GKI_DECONFIG"
+            fi
           done
 
-          # Remove check_defconfig safely 🔄
-          sed -i '/check_defconfig/d' ./common/build.config.gki
-    
+          # Удалить check_defconfig безопасно 🔄
+          if grep -q "check_defconfig" ./common/build.config.gki; then
+            sed -i '/check_defconfig/d' ./common/build.config.gki
+          fi
+
+
 
       - name: Config Kernel Name
         run: |
@@ -368,7 +363,7 @@ jobs:
           sed -i '$s|echo "\$res"|echo "\$res-Wild+"|' ./common/scripts/setlocalversion
 
           # Run perl command to modify UTS_VERSION
-          perl -pi -e 's{UTS_VERSION="\$\(echo \$UTS_VERSION \$CONFIG_FLAGS \$TIMESTAMP \| cut -b -\$UTS_LEN\)"}{UTS_VERSION="#1 SMP PREEMPT Sat Apr 20 04:20:00 UTC 2024"}' ./common/scripts/mkcompile_h
+          perl -pi -e 's{UTS_VERSION=".*"}{UTS_VERSION="#1 SMP PREEMPT Sat Apr 20 04:20:00 UTC 2024"}' ./common/scripts/mkcompile_h
 
           echo "Building the kernel..."
           if [ -f "build/build.sh" ]; then
@@ -380,7 +375,7 @@ jobs:
             sed -E -i '/^CONFIG_LOCALVERSION=/ s/(.*)"$/\1-Wild+"/' ./common/arch/arm64/configs/gki_defconfig
             #tools/bazel build --config=fast --lto=${{ inputs.lto_type }} //common:kernel_aarch64_dist
           fi
-
+          
       - name: Build with retry
         uses: nick-fields/retry@v3
         with:
