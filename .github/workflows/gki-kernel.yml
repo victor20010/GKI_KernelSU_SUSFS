@@ -342,8 +342,8 @@ jobs:
             "s/# CONFIG_BPF_STREAM_PARSER is not set/CONFIG_BPF_STREAM_PARSER=y/"
             "s/CONFIG_BPF_LSM=n/CONFIG_BPF_LSM=y/"
             "s/# CONFIG_BPF_LSM is not set/CONFIG_BPF_LSM=y/"
-            "s/CONFIG_BPF_KPROBE_OVERRIDE=n/CONFIG_BPF_KPROBE_OVERRIDE=y/"
-            "s/# CONFIG_BPF_KPROBE_OVERRIDE is not set/CONFIG_BPF_KPROBE_OVERRIDE=y/"
+            #"s/CONFIG_BPF_KPROBE_OVERRIDE=n/CONFIG_BPF_KPROBE_OVERRIDE=y/"
+            #"s/# CONFIG_BPF_KPROBE_OVERRIDE is not set/CONFIG_BPF_KPROBE_OVERRIDE=y/"
             "s/CONFIG_SECURITY_SELINUX_BOOTPARAM=n/CONFIG_SECURITY_SELINUX_BOOTPARAM=y/"
             "s/# CONFIG_SECURITY_SELINUX_BOOTPARAM is not set/CONFIG_SECURITY_SELINUX_BOOTPARAM=y/"
             "s/CONFIG_SECURITY_SELINUX_DEVELOP=n/CONFIG_SECURITY_SELINUX_DEVELOP=y/"
@@ -360,7 +360,7 @@ jobs:
           done
 
           # Добавляем необходимые зависимости для BPF_LSM
-          echo "CONFIG_LSM=\"lockdown,yama,integrity,bpf\"" >> "$CONFIG_FILE"
+          echo "CONFIG_LSM=\"lockdown,yama,selinux,bpf\"" >> "$CONFIG_FILE"
           echo "CONFIG_SECURITY=y" >> "$CONFIG_FILE"
           echo "CONFIG_SECURITYFS=y" >> "$CONFIG_FILE"
 
