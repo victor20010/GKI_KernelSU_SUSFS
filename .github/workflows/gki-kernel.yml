@@ -285,7 +285,6 @@ jobs:
 
       - name: Add SUSFS Configuration Settings
         run: |
-
           echo "Changing to configuration directory: $CONFIG..."
           cd "$CONFIG"
 
@@ -337,14 +336,18 @@ jobs:
 
             # Обновить Kconfig
             if ! grep -q "^config $CONFIG_NAME" "$KERNEL_CONFIG"; then
-              echo -e "config $CONFIG_NAME\n    bool\n    default $VALUE\n    help \"\"\n" >> "$KERNEL_CONFIG"
+              echo "config $CONFIG_NAME" >> "$KERNEL_CONFIG"
+              echo "    bool" >> "$KERNEL_CONFIG"
+              echo "    default $VALUE" >> "$KERNEL_CONFIG"
+              echo "    help" >> "$KERNEL_CONFIG"
+              echo "      Enable $CONFIG_NAME" >> "$KERNEL_CONFIG"
             fi
 
             # Обновить defconfig с переопределением 🔄
             if grep -q "^$CONFIG_NAME=" "$GKI_DECONFIG"; then
-                    sed -i "s/^$CONFIG_NAME=.*/$CONFIG_NAME=$VALUE/" "$GKI_DECONFIG"
+              sed -i "s/^$CONFIG_NAME=.*/$CONFIG_NAME=$VALUE/" "$GKI_DECONFIG"
             else
-                    echo "$CONFIG_NAME=$VALUE" >> "$GKI_DECONFIG"
+              echo "$CONFIG_NAME=$VALUE" >> "$GKI_DECONFIG"
             fi
           done
 
