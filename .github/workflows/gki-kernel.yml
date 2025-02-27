@@ -290,57 +290,60 @@ jobs:
           sed -i '$s|echo "\$res"|echo "\$res-Wild+"|' ./common/scripts/setlocalversion
           perl -pi -e 's{UTS_VERSION=".*"}{UTS_VERSION="#1 SMP PREEMPT Sat Apr 20 04:20:00 UTC 2024"}' ./common/scripts/mkcompile_h
 
-    
           CONFIG_SETTINGS=(
-            "CONFIG_KSU_SUSFS,y"
-            "CONFIG_KSU_SUSFS_HAS_MAGIC_MOUNT,y"
-            "CONFIG_KSU_SUSFS_SUS_PATH,y"
-            "CONFIG_KSU_SUSFS_SUS_MOUNT,y"
-            "CONFIG_KSU_SUSFS_AUTO_ADD_SUS_KSU_DEFAULT_MOUNT,y"
-            "CONFIG_KSU_SUSFS_AUTO_ADD_SUS_BIND_MOUNT,y"
-            "CONFIG_KSU_SUSFS_SUS_KSTAT,y"
-            "CONFIG_KSU_SUSFS_SUS_OVERLAYFS,y"
-            "CONFIG_KSU_SUSFS_TRY_UMOUNT,y"
-      "CONFIG_KSU_SUSFS_AUTO_ADD_TRY_UMOUNT_FOR_BIND_MOUNT,y"
-      "CONFIG_KSU_SUSFS_SPOOF_UNAME,y"
-      "CONFIG_KSU_SUSFS_ENABLE_LOG,y"
-      "CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS,y"
-      "CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOT,y"
-      "CONFIG_KSU_SUSFS_OPEN_REDIRECT,y"
-      "CONFIG_KSU_SUSFS_SUS_SU,y"
-      "CONFIG_KSU_ALLOWLIST_WORKAROUND,y"
-      "CONFIG_KSU_DEBUG,y"
-      "CONFIG_BPF_PRELOAD,y"
-      "CONFIG_BPF_LSM,y"
-      "CONFIG_BPF_STREAM_PARSER,y"
-      "CONFIG_BPFILTER,y"
-      "CONFIG_TMPFS_XATTR,y"
-      "CONFIG_TMPFS_POSIX_ACL,y"
-      "CONFIG_SECURITY,y"
-      "CONFIG_IP_NF_TARGET_TTL,y"
-      "CONFIG_IP6_NF_TARGET_HL,y"
-      "CONFIG_IP6_NF_MATCH_HL,y"
-    )
+            "CONFIG_KSU_SUSFS=y"
+            "CONFIG_KSU_SUSFS_HAS_MAGIC_MOUNT=y"
+            "CONFIG_KSU_SUSFS_SUS_PATH=y"
+            "CONFIG_KSU_SUSFS_SUS_MOUNT=y"
+            "CONFIG_KSU_SUSFS_AUTO_ADD_SUS_KSU_DEFAULT_MOUNT=y"
+            "CONFIG_KSU_SUSFS_AUTO_ADD_SUS_BIND_MOUNT=y"
+            "CONFIG_KSU_SUSFS_SUS_KSTAT=y"
+            "CONFIG_KSU_SUSFS_SUS_OVERLAYFS=y"
+            "CONFIG_KSU_SUSFS_TRY_UMOUNT=y"
+            "CONFIG_KSU_SUSFS_AUTO_ADD_TRY_UMOUNT_FOR_BIND_MOUNT=y"
+            "CONFIG_KSU_SUSFS_SPOOF_UNAME=y"
+            "CONFIG_KSU_SUSFS_ENABLE_LOG=y"
+            "CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS=y"
+            "CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOT=y"
+            "CONFIG_KSU_SUSFS_OPEN_REDIRECT=y"
+            "CONFIG_KSU_SUSFS_SUS_SU=y"
+            "CONFIG_KSU_ALLOWLIST_WORKAROUND=y"
+            "CONFIG_KSU_DEBUG=y"
+            "CONFIG_BPF_PRELOAD=y"
+            "CONFIG_KPROBES=y"
+            "CONFIG_BPF_LSM=y"
+            "CONFIG_BPF_STREAM_PARSER=y"
+            "CONFIG_BPFILTER=y"
+            "CONFIG_TMPFS_XATTR=y"
+            "CONFIG_TMPFS_POSIX_ACL=y"
+            "CONFIG_SECURITY=y"
+            "CONFIG_IP_NF_TARGET_TTL=y"
+            "CONFIG_IP6_NF_TARGET_HL=y"
+            "CONFIG_IP6_NF_MATCH_HL=y"
+            "CONFIG_USB_CONFIGFS_MASS_STORAGE=y"
+            "CONFIG_DEBUG_KERNEL=y"
+            "CONFIG_UPROBES=y"
+            "CONFIG_SECURITY_SELINUX_BOOTPARAM=y"
+            "CONFIG_SECURITY_SELINUX_DEVELOP=y"
+            "CONFIG_SECURITY_SELINUX_CHECKREQPROT_VALUE=y"
+          )
 
-    GKI_DECONFIG="./common/arch/arm64/configs/gki_defconfig"
+          GKI_DECONFIG="./common/arch/arm64/configs/gki_defconfig"
 
-    # Обработка конфигурационных настроек
-    for CONFIG_SETTING in "${CONFIG_SETTINGS[@]}"; do
-      IFS=',' read -r CONFIG_NAME VALUE <<< "${CONFIG_SETTING}"
-      VALUE="${VALUE// /}"  # Удаление пробелов
+          for CONFIG_SETTING in "${CONFIG_SETTINGS[@]}"; do
+            IFS='=' read -r CONFIG_NAME VALUE <<< "$CONFIG_SETTING"
+            VALUE="${VALUE// /}"
 
-      # Обновление GKI_DECONFIG
-      if grep -q "^${CONFIG_NAME}=" "$GKI_DECONFIG"; then
-        sed -i "s/^${CONFIG_NAME}=.*/${CONFIG_NAME}=${VALUE:-y}/" "$GKI_DECONFIG"
-      else
-        echo "${CONFIG_NAME}=${VALUE:-y}" >> "$GKI_DECONFIG"
-      fi
-    done
+          if grep -q "^$CONFIG_NAME=" "$GKI_DECONFIG"; then
+            sed -i "s/^$CONFIG_NAME=.*/$CONFIG_NAME=$VALUE/" "$GKI_DECONFIG"
+          else
+          echo "$CONFIG_NAME=$VALUE" >> "$GKI_DECONFIG"
+          fi
+          done
 
-    # Безопасное удаление check_defconfig
-    if grep -q "check_defconfig" ./common/build.config.gki; then
-      sed -i '/check_defconfig/d' ./common/build.config.gki
-    fi
+          if grep -q "check_defconfig" ./common/build.config.gki; then
+            sed -i '/check_defconfig/d' ./common/build.config.gki
+          fi
 
       - name: Config Kernel Name
         run: |
