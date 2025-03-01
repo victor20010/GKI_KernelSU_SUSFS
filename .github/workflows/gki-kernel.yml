@@ -314,7 +314,7 @@ jobs:
             "CONFIG_KPROBES=y"
             "CONFIG_SECURITY=y"
             "CONFIG_USB_CONFIGFS_MASS_STORAGE=y"
-            "CONFIG_DEBUG_KERNEL=y"
+            #"CONFIG_DEBUG_KERNEL=y"
             "CONFIG_UPROBES=y"
             "CONFIG_SECURITY_SELINUX_BOOTPARAM=y"
             "CONFIG_SECURITY_SELINUX_DEVELOP=y"
