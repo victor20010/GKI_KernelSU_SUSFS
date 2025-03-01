@@ -346,6 +346,61 @@ jobs:
 
           # Remove check_defconfig
           sed -i 's/check_defconfig//' ./common/build.config.gki
+
+      - name: Modify SELinux Policy for BPF Permission
+        run: |
+          set -e
+          echo "Changing to configuration directory: $CONFIG..."
+          cd "$CONFIG"
+
+          SELINUX_INCLUDE_DIR="./common/security/selinux/include"
+
+          if [ -d "$SELINUX_INCLUDE_DIR" ]; then
+            cd "$SELINUX_INCLUDE_DIR"
+
+            # Update policycap.h
+          if [ -f "policycap.h" ]; then
+            echo "Ensuring policycap.h includes POLICYDB_CAPABILITY_BPF..."
+          if ! grep -q 'POLICYDB_CAPABILITY_BPF' policycap.h; then
+            sed -i '/__POLICYDB_CAPABILITY_MAX/i\    POLICYDB_CAPABILITY_BPF,   /* New: BPF capability */' policycap.h
+            echo "Added POLICYDB_CAPABILITY_BPF to policycap.h"
+          else
+            echo "POLICYDB_CAPABILITY_BPF already present in policycap.h"
+          fi
+          else
+            echo "Warning: policycap.h not found"
+          fi
+
+          if [ -f "policycap_names.h" ]; then
+            echo "Ensuring policycap_names.h includes \"bpf\" in the capability names array..."
+          if ! grep -q '"bpf"' policycap_names.h; then
+            sed -i '/};/i\    "bpf",   /* New: capability name for BPF */' policycap_names.h
+            echo "Added \"bpf\" to policycap_names.h"
+          else
+            echo "\"bpf\" already present in policycap_names.h"
+          fi
+          else
+            echo "Warning: policycap_names.h not found"
+          fi
+
+          else
+            echo "Warning: SELinux policy include directory not found at expected location"
+          fi
+
+          if [ -f "classmap.h" ]; then
+            echo "Ensuring classmap.h includes \"bpf\" in COMMON_CAP2_PERMS..."
+          if ! grep -q '"bpf"' classmap.h; then
+            sed -i '/COMMON_CAP2_PERMS/ s/"audit_read"/"audit_read", "bpf"/' classmap.h
+            echo "Added \"bpf\" to COMMON_CAP2_PERMS in classmap.h"
+          else
+            echo "\"bpf\" already present in COMMON_CAP2_PERMS in classmap.h"
+          fi
+          else
+            echo "Warning: classmap.h not found"
+          fi
+          else
+            echo "Warning: SELinux policy include directory not found at expected location"
+          fi
       
       - name: Config Kernel Name
         if: ${{ inputs.kernel_version == '5.10' || inputs.kernel_version == '5.15' || inputs.kernel_version == '6.1' }}
