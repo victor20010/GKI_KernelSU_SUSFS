@@ -532,11 +532,24 @@ jobs:
           $AVBTOOL add_hash_footer --partition_name boot --partition_size $((64 * 1024 * 1024)) --image boot-lz4.img --algorithm SHA256_RSA2048 --key $BOOT_SIGN_KEY_PATH
           cp ./boot-lz4.img ../${{ inputs.android_version }}-${{ inputs.kernel_version }}.${{ inputs.sub_level }}-${{ inputs.os_patch_level }}-boot-lz4.img
 
+
       - name: Compress Source Directory
         run: |
-          echo "Compressing source directory..."
-          tar -czf source-code.tar.gz -C $GITHUB_WORKSPACE .
-
+          echo "Compressing kernel source directory..."
+          mkdir -p /tmp/kernel-source-export
+          if [ -d "$CONFIG" ]; then
+            cp -r "$CONFIG/common" /tmp/kernel-source-export/ 2>/dev/null || true
+          fi
+ 
+          tar -czf source-code.tar.gz -C /tmp/kernel-source-export .
+          if [ -f "source-code.tar.gz" ]; then
+            echo "Source archive created successfully"
+            ls -la source-code.tar.gz
+          else
+            echo "Failed to create source archive, continuing anyway"
+            touch source-code.tar.gz
+          fi
+    
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
