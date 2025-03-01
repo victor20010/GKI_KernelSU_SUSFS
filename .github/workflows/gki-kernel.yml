@@ -328,7 +328,7 @@ jobs:
             "CONFIG_SECURITY_NETWORK=y"
             "CONFIG_SECURITY_PATH=y"
             "CONFIG_BPF_LSM=y"
-            "CONFIG_LSM=\"lockdown,capability,yama,selinux,bpf\"
+            "CONFIG_LSM=\"lockdown,capability,yama,selinux,bpf\""
           )
 
           GKI_DECONFIG="./common/arch/arm64/configs/gki_defconfig"
