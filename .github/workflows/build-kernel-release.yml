@@ -29,7 +29,7 @@ on:
           - Stable
           - Dev
           - Other
-        default: Stable
+        default: Dev
       kernelsu_branch_other:
         description: "If 'Other' is selected, specify your custom branch"
         required: false
