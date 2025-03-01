@@ -363,7 +363,7 @@ jobs:
             if [ -f "policycap.h" ]; then
               echo "Ensuring policycap.h includes POLICYDB_CAPABILITY_BPF..."
               if ! grep -q 'POLICYDB_CAPABILITY_BPF' policycap.h; then
-                sed -i '/__POLICYDB_CAPABILITY_MAX/i\    POLICYDB_CAPABILITY_BPF,
+                sed -i '/__POLICYDB_CAPABILITY_MAX/i\    POLICYDB_CAPABILITY_BPF,' policycap.h
                 echo "Added POLICYDB_CAPABILITY_BPF to policycap.h"
               else
                 echo "POLICYDB_CAPABILITY_BPF already present in policycap.h"
@@ -376,7 +376,7 @@ jobs:
             if [ -f "policycap_names.h" ]; then
               echo "Ensuring policycap_names.h includes \"bpf\" in the capability names array..."
               if ! grep -q '"bpf"' policycap_names.h; then
-                sed -i '/};/i\    "bpf",
+                sed -i '/};/i\    "bpf",' policycap_names.h
                 echo "Added \"bpf\" to policycap_names.h"
               else
                 echo "\"bpf\" already present in policycap_names.h"
@@ -428,7 +428,7 @@ jobs:
           sed -i '$s|echo "\$res"|echo "\$res-Wild+"|' ./common/scripts/setlocalversion
 
           # Run perl command to modify UTS_VERSION
-          perl -pi -e 's{UTS_VERSION="\$\(echo \$UTS_VERSION \$CONFIG_FLAGS \$TIMESTAMP \| cut -b -\$UTS_LEN\)"}{UTS_VERSION="#1 SMP PREEMPT Sat Apr 20 04:20:00 UTC 2024"}' ./common/scripts/mkcompile_h
+          perl -pi -e 's{UTS_VERSION="\$\(echo \$UTS_VERSION \$CONFIG_FLAGS \$TIMESTAMP \| cut -b -\$UTS_LEN\)"}{UTS_VERSION="#1 SMP PREEMPT Sat Apr 20 04:20:00 UTC 2024"}' ./common/scripts/mkcompile_[...]
 
           echo "Building the kernel..."
           if [ -f "build/build.sh" ]; then
@@ -511,6 +511,7 @@ jobs:
           mv ../Image.gz ./Image.gz
           zip -r "../$ZIP_NAME" ./*
           rm ./Image.gz
+
 
       - name: Run Boot Image ${{ inputs.android_version }} Build Script
         if: ${{ inputs.android_version == 'android12' }}
