@@ -340,7 +340,7 @@ jobs:
           if grep -q "^$CONFIG_NAME=" "$GKI_DECONFIG"; then
             sed -i "s/^$CONFIG_NAME=.*/$CONFIG_NAME=$VALUE/" "$GKI_DECONFIG"
           else
-          echo "$CONFIG_NAME=$VALUE" >> "$GKI_DECONFIG"
+            echo "$CONFIG_NAME=$VALUE" >> "$GKI_DECONFIG"
           fi
           done
 
