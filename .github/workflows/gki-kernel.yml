@@ -338,47 +338,27 @@ jobs:
           sed -i 's/check_defconfig//' ./common/build.config.gki
           
       - name: Modify SELinux Policy for BPF Permission
-        shell: bash
         run: |
           set -e
           echo "Changing to configuration directory: $CONFIG..."
           cd "$CONFIG/common/security/selinux/include"
 
-          if ! grep -q 'POLICYDB_CAPABILITY_BPF' "policycap.h"; then
-            sed -i '/__POLICYDB_CAPABILITY_MAX/i\    POLICYDB_CAPABILITY_BPF,' "policycap.h"
-            echo "Added POLICYDB_CAPABILITY_BPF to policycap.h"
-          else
-            echo "POLICYDB_CAPABILITY_BPF already present in policycap.h"
+          # Modify policycap.h to add BPF at the beginning of enum
+          if ! grep -q 'POLICYDB_CAPABILITY_BPF' policycap.h; then
+            sed -i '/enum {/a\\tPOLICYDB_CAPABILITY_BPF,' policycap.h
+            echo "Added POLICYDB_CAPABILITY_BPF to beginning of enum in policycap.h"
           fi
-          
-          # Print the contents of policycap.h and policycap_names.h for debugging
-          echo "Contents of policycap.h:"
-          cat "policycap.h"
-          
-          # Ensure policycap_names.h has "bpf" in capability names
-          if ! grep -q '"bpf"' "policycap_names.h"; then
-            sed -i '/};/ i\    "bpf",' "policycap_names.h"
-             echo "Added \"bpf\" to policycap_names.h"
-           else
-             echo "\"bpf\" already present in policycap_names.h"
-           fi
 
-            # Ensure classmap.h includes "bpf" in COMMON_CAP2_PERMS
-            #if ! grep -q '"bpf"' "classmap.h"; then
-            #  sed -i '/COMMON_CAP2_PERMS/ s/"audit_read"/"audit_read", "bpf"/' "classmap.h"
-            #  echo "Added \"bpf\" to COMMON_CAP2_PERMS in classmap.h"
-            #else
-            #echo "\"bpf\" already present in COMMON_CAP2_PERMS in classmap.h"
-            #fi
-
-
-
-          echo "Contents of policycap_names.h:"
-          cat "policycap_names.h"
-
-          else
-            echo "Warning: SELinux policy include directory not found at expected location"
+          # Modify policycap_names.h similarly
+          if ! grep -q '"bpf"' policycap_names.h; then
+            sed -i '/const char \*selinux_policycap_names\[.*\] = {/a\\t"bpf",' policycap_names.h
+            echo "Added \"bpf\" to beginning of array in policycap_names.h"
           fi
+          echo "=== Final verification ==="
+          echo "policycap.h contents:"
+          cat policycap.h
+          echo -e "\npolicycap_names.h contents:"
+          cat policycap_names.h
       
       - name: Config Kernel Name
         if: ${{ inputs.kernel_version == '5.10' || inputs.kernel_version == '5.15' || inputs.kernel_version == '6.1' }}
