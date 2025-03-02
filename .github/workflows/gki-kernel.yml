@@ -213,6 +213,7 @@ jobs:
             curl -LSs "https://raw.githubusercontent.com/5ec1cff/KernelSU/main/kernel/setup.sh" | bash $BRANCH
           fi
           
+          
       - name: Apply SUSFS Patches for KernelSU Variants
         run: |
           echo "Changing to configuration directory: $CONFIG..."
@@ -227,24 +228,24 @@ jobs:
 
           if [ "${{ inputs.kernelsu_variant }}" == "Official" ]; then
             echo "Applying SUSFS patches for Official KernelSU..."
-            cp ../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./KernelSU/
             cd ./KernelSU
+            cp ../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
             patch -p1 --forward < 10_enable_susfs_for_ksu.patch
           elif [ "${{ inputs.kernelsu_variant }}" == "Next" ]; then
             echo "Applying SUSFS patches for KernelSU-Next..."
             cd ./KernelSU-Next
-            cp ../../kernel_patches/0001-kernel-patch-susfs-v1.5.5-to-KernelSU-Next-v1.0.5.patch ./
+            cp ../../kernel_patches/next/0001-kernel-patch-susfs-v1.5.5-to-KernelSU-Next-v1.0.5.patch ./
             patch -p1 --forward < 0001-kernel-patch-susfs-v1.5.5-to-KernelSU-Next-v1.0.5.patch || true
           elif [ "${{ inputs.kernelsu_variant }}" == "MKSU" ]; then
             echo "Applying SUSFS patches for MKSU..."
-            cp ../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./KernelSU/
-            cd ./KernelSU
+             cd ./KernelSU
+            cp ../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
             patch -p1 --forward < 10_enable_susfs_for_ksu.patch || true
             
             echo "Applying MKSU specific SUSFS patch..."
-            cp ../../kernel_patches/mksu_susfs.patch ../KernelSU/
+            cp ../../kernel_patches/mksu/mksu_susfs.patch ../KernelSU/
             patch -p1 < mksu_susfs.patch
-            cp ../../kernel_patches/fix.patch ./KernelSU/
+            cp ../../kernel_patches/mksu/fix.patch ./KernelSU/
             patch -p1 < fix.patch
             
           else
@@ -260,9 +261,20 @@ jobs:
         run: |
           echo "Changing to configuration directory: $CONFIG..."
           cd "$CONFIG/common"
-          # Apply additional patch
-          cp ../../kernel_patches/new_hooks.patch ./
-          patch -p1 -F 3 < new_hooks.patch
+
+          if [ "${{ inputs.kernelsu_variant }}" == "Official" ]; then
+            echo "Applying hooks for Official KernelSU..."
+            cp ../../kernel_patches/hooks/ksu_hooks.patch ./
+            patch -p1 -F 3 < ksu_hooks.patch
+          elif [ "${{ inputs.kernelsu_variant }}" == "Next" ]; then
+            echo "Applying hooks for KernelSU-Next..."
+            cp ../../kernel_patches/next/next_hooks.patch ./
+            patch -p1 -F 3 < next_hooks.patch
+          elif [ "${{ inputs.kernelsu_variant }}" == "MKSU" ]; then
+            echo "Applying hooks for MKSU..."
+            cp ../../kernel_patches/hooks/ksu_hooks.patch ./
+            patch -p1 -F 3 < ksu_hooks.patch
+          fi
           
       - name: Apply Hide Stuff Patches
         run: |
@@ -271,6 +283,7 @@ jobs:
           # Apply additional patch
           cp ../../kernel_patches/69_hide_stuff.patch ./
           patch -p1 -F 3 < 69_hide_stuff.patch
+            
             
       - name: Add SUSFS Configuration Settings
         run: |
@@ -315,12 +328,11 @@ jobs:
             "CONFIG_BPF_PRELOAD=y"
             "CONFIG_BPF_STREAM_PARSER=y"
             "CONFIG_BPFILTER=y"            
-            "CONFIG_SECURITY_NETWORK=y"
-            "CONFIG_SECURITY_PATH=y"
-            "CONFIG_BPF_LSM=y"
-            "CONFIG_LSM=\"lockdown,capability,yama,selinux,bpf\""
           )
-
+          #"CONFIG_SECURITY_NETWORK=y"
+          #"CONFIG_SECURITY_PATH=y"
+          #"CONFIG_BPF_LSM=y"
+          #"CONFIG_LSM=\"lockdown,capability,yama,selinux,bpf\""
           GKI_DECONFIG="./common/arch/arm64/configs/gki_defconfig"
 
           for CONFIG_SETTING in "${CONFIG_SETTINGS[@]}"; do
@@ -362,25 +374,24 @@ jobs:
 
       
       - name: Config Kernel Name
-        if: ${{ inputs.kernel_version == '5.10' || inputs.kernel_version == '5.15' || inputs.kernel_version == '6.1' }}
+        #if: ${{ inputs.kernel_version == '5.10' || inputs.kernel_version == '5.15' || inputs.kernel_version == '6.1' }}
         run: |
           cd "$CONFIG/common"
           # Add bbrv3 config setting
           cp ../../kernel_patches/bbr/tcp_bbr.c ./net/ipv4/
-          
-          if [[ "${{ inputs.kernel_version }}" == "5.10" ]]; then
-            cp ../../kernel_patches/bbr/bbrv3-5.10.patch ./
-            patch -p1 -F 3 < bbrv3-5.10.patch
-          else
-            cp ../../kernel_patches/bbr/bbrv3-5.15+.patch ./
-            patch -p1 -F 3 < bbrv3-5.15+.patch
-          fi
+          #
+          #if [[ "${{ inputs.kernel_version }}" == "5.10" ]]; then
+          #  cp ../../kernel_patches/bbr/bbrv3-5.10.patch ./
+          #  patch -p1 -F 3 < bbrv3-5.10.patch
+          #else
+          #  cp ../../kernel_patches/bbr/bbrv3-5.15+.patch ./
+          #  patch -p1 -F 3 < bbrv3-5.15+.patch
+          #fi
 
-          echo "CONFIG_TCP_CONG_ADVANCED=y" >> ./arch/arm64/configs/gki_defconfig
-          echo "CONFIG_TCP_CONG_BBR=y" >> ./arch/arm64/configs/gki_defconfig
-          echo "CONFIG_NET_SCH_FQ=y" >> ./arch/arm64/configs/gki_defconfig
-          echo "CONFIG_DEFAULT_BBR=y" >> ./arch/arm64/configs/gki_defconfig
-          echo "CONFIG_DEFAULT_TCP_CONG=bbr" >> ./arch/arm64/configs/gki_defconfig
+          cd ..
+          #echo "CONFIG_TCP_CONG_ADVANCED=y" >> ./common/arch/arm64/configs/gki_defconfig 
+          echo "CONFIG_TCP_CONG_BBR=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_NET_SCH_FQ=y" >> ./common/arch/arm64/configs/gki_defconfig
 
 
       - name: Config Kernel Name
@@ -403,26 +414,6 @@ jobs:
             sed -E -i '/^CONFIG_LOCALVERSION=/ s/(.*)"$/\1-Wild+"/' ./common/arch/arm64/configs/gki_defconfig
             #tools/bazel build --config=fast --lto=${{ inputs.lto_type }} //common:kernel_aarch64_dist
           fi
-
-      - name: Build with retry
-        uses: nick-fields/retry@v3
-        with:
-          timeout_minutes: 30
-          max_attempts: 3
-          command: |
-            set -e
-            set -x
-            cd "$CONFIG"
-            cp /home/runner/work/GKI_KernelSU_SUSFS/GKI_KernelSU_SUSFS/android13-5.10-228/out/android13-5.10/common/modules.order common/android/gki_aarch64_modules
-            
-            echo "Building the kernel..."
-            if [ -f "build/build.sh" ]; then
-              LTO=thin BUILD_CONFIG=common/build.config.gki.aarch64 build/build.sh CC="/usr/bin/ccache clang" || exit 1
-              
-            else
-              tools/bazel build --disk_cache=/home/runner/.cache/bazel --config=fast --lto=thin //common:kernel_aarch64_dist || exit 1
-            fi
-            ccache --show-stats 
 
       - name: Create Bootimgs Folder and Copy Images
         if: ${{ inputs.android_version == 'android12' || inputs.android_version == 'android13' }}
