@@ -419,8 +419,9 @@ jobs:
             else
               tools/bazel build --disk_cache=/home/runner/.cache/bazel --config=fast --lto=thin //common:kernel_aarch64_dist || exit 1
             fi
+            cp /home/runner/work/GKI_KernelSU_SUSFS/GKI_KernelSU_SUSFS/android13-5.10-228/out/android13-5.10/common/modules.order common/android/gki_aarch64_modules
             ccache --show-stats
-            
+
       - name: Create Bootimgs Folder and Copy Images
         if: ${{ inputs.android_version == 'android12' || inputs.android_version == 'android13' }}
         run: |
