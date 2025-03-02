@@ -363,6 +363,7 @@ jobs:
             if [ -f "policycap.h" ]; then
               echo "Ensuring policycap.h includes POLICYDB_CAPABILITY_BPF..."
               if ! grep -q 'POLICYDB_CAPABILITY_BPF' policycap.h; then
+                # Insert POLICYDB_CAPABILITY_BPF into the enum
                 sed -i '/__POLICYDB_CAPABILITY_MAX/i\    POLICYDB_CAPABILITY_BPF,' policycap.h
                 echo "Added POLICYDB_CAPABILITY_BPF to policycap.h"
               else
@@ -376,7 +377,10 @@ jobs:
             if [ -f "policycap_names.h" ]; then
               echo "Ensuring policycap_names.h includes \"bpf\" in the capability names array..."
               if ! grep -q '"bpf"' policycap_names.h; then
-                sed -i '/};/i\    "bpf",' policycap_names.h
+                # Determine the index of the new entry based on __POLICYDB_CAPABILITY_MAX in policycap.h
+                INDEX=$(( $(grep '__POLICYDB_CAPABILITY_MAX' policycap.h | sed 's/.*= \(.*\)/\1/') - 1 ))
+                # Insert "bpf" into the array at the correct index
+                sed -i "s/};/    \"bpf\"\\n};/" policycap_names.h
                 echo "Added \"bpf\" to policycap_names.h"
               else
                 echo "\"bpf\" already present in policycap_names.h"
