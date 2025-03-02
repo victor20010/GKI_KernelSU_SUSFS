@@ -328,7 +328,6 @@ jobs:
             "CONFIG_BPF_PRELOAD=y"
             "CONFIG_BPF_STREAM_PARSER=y"
             "CONFIG_BPFILTER=y"  
-            "CONFIG_CMDLINE="stack_depot_disable=on kasan.stacktrace=off kvm-arm.mode=protected cgroup_disable=pressure cgroup.memory=nokmem selinux=permissive""
           )
           #"CONFIG_SECURITY_NETWORK=y"
           #"CONFIG_SECURITY_PATH=y"
@@ -340,13 +339,13 @@ jobs:
             IFS='=' read -r CONFIG_NAME VALUE <<< "$CONFIG_SETTING"
             VALUE="${VALUE// /}"
 
-          if grep -q "^$CONFIG_NAME=" "$GKI_DECONFIG"; then
-            sed -i "s/^$CONFIG_NAME=.*/$CONFIG_NAME=$VALUE/" "$GKI_DECONFIG"
-          else
-            echo "$CONFIG_NAME=$VALUE" >> "$GKI_DECONFIG"
-          fi
+            if grep -q "^$CONFIG_NAME=" "$GKI_DECONFIG"; then
+              sed -i "s/^$CONFIG_NAME=.*/$CONFIG_NAME=$VALUE/" "$GKI_DECONFIG"
+            else
+              echo "$CONFIG_NAME=$VALUE" >> "$GKI_DECONFIG"
+            fi
           done
-
+          echo "CONFIG_SECURITY_SELINUX_PERMISSIVE=y" >> ./common/arch/arm64/configs/gki_defconfig
           # Remove check_defconfig
           sed -i 's/check_defconfig//' ./common/build.config.gki
           
