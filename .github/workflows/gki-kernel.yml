@@ -397,19 +397,6 @@ jobs:
           cat policycap_names.h
           
       - name: Config Kernel Name
-        if: ${{ inputs.kernel_version != '6.6' }}
-        run: |
-          cd "$CONFIG/common"
-          # Add bbrv3 config setting
-          cp ../../kernel_patches/bbr/tcp_bbr.c ./net/ipv4/
-
-          cd ..
-          #echo "CONFIG_TCP_CONG_ADVANCED=y" >> ./common/arch/arm64/configs/gki_defconfig 
-          echo "CONFIG_TCP_CONG_BBR=y" >> ./common/arch/arm64/configs/gki_defconfig
-          echo "CONFIG_NET_SCH_FQ=y" >> ./common/arch/arm64/configs/gki_defconfig
-
-
-      - name: Config Kernel Name
         run: |
           echo "Changing to configuration directory: $CONFIG..."
           cd "$CONFIG"
@@ -435,7 +422,6 @@ jobs:
         with:
           timeout_minutes: 30
           max_attempts: 3
-          retry_on: timeout
           command: |
             set -e
             set -x
@@ -446,8 +432,8 @@ jobs:
             else
               tools/bazel build --disk_cache=/home/runner/.cache/bazel --config=fast --lto=thin //common:kernel_aarch64_dist || exit 1
             fi
-            ccache --show-stats    
-
+            ccache --show-stats
+            
       - name: Create Bootimgs Folder and Copy Images
         if: ${{ inputs.android_version == 'android12' || inputs.android_version == 'android13' }}
         run: |
