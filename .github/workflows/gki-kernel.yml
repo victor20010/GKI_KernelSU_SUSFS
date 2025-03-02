@@ -359,49 +359,36 @@ jobs:
           if [ -d "$SELINUX_INCLUDE_DIR" ]; then
             cd "$SELINUX_INCLUDE_DIR"
 
-            # Update policycap.h
-            if [ -f "policycap.h" ]; then
-              echo "Ensuring policycap.h includes POLICYDB_CAPABILITY_BPF..."
-              if ! grep -qE '^[[:space:]]*POLICYDB_CAPABILITY_BPF(,|$)' policycap.h; then
-                sed -i '/__POLICYDB_CAPABILITY_MAX/i\    POLICYDB_CAPABILITY_BPF,' policycap.h
-                echo "Added POLICYDB_CAPABILITY_BPF to policycap.h"
-              else
-                echo "POLICYDB_CAPABILITY_BPF already present in policycap.h"
-              fi
+            # Ensure no redefinition in policycap.h
+            if ! grep -q 'POLICYDB_CAPABILITY_BPF' "$SELINUX_INCLUDE_DIR/policycap.h"; then
+              sed -i '/__POLICYDB_CAPABILITY_MAX/i\    POLICYDB_CAPABILITY_BPF,' "$SELINUX_INCLUDE_DIR/policycap.h"
+              echo "Added POLICYDB_CAPABILITY_BPF to policycap.h"
             else
-              echo "Warning: policycap.h not found"
+              echo "POLICYDB_CAPABILITY_BPF already present in policycap.h"
             fi
-            cat /common/security/selinux/include/policycap.h
-            # Update policycap_names.h
-            if [ -f "policycap_names.h" ]; then
-              echo "Ensuring policycap_names.h includes \"bpf\" in the capability names array..."
-              if ! grep -q '"bpf"' policycap_names.h; then
-                sed -i '/};/ i\    "bpf",' policycap_names.h
-                echo "Added \"bpf\" to policycap_names.h"
-              else
-                echo "\"bpf\" already present in policycap_names.h"
-              fi
+
+            # Ensure policycap_names.h has "bpf" in capability names
+            if ! grep -q '"bpf"' "$SELINUX_INCLUDE_DIR/policycap_names.h"; then
+              sed -i '/};/ i\    "bpf",' "$SELINUX_INCLUDE_DIR/policycap_names.h"
+              echo "Added \"bpf\" to policycap_names.h"
             else
-              echo "Warning: policycap_names.h not found"
+              echo "\"bpf\" already present in policycap_names.h"
             fi
-            cat /common/security/selinux/include/policycap_names.h
-            # Update classmap.h
-            #if [ -f "classmap.h" ]; then
-            #  echo "Ensuring classmap.h includes \"bpf\" in COMMON_CAP2_PERMS..."
-            #  if ! grep -q '"bpf"' classmap.h; then
-            #    # Insert "bpf" after "perfmon" if found, otherwise insert before "checkpoint_restore"
-            #    if grep -q '"perfmon"' classmap.h; then
-            #      sed -i '/COMMON_CAP2_PERMS/ s/"perfmon"/"perfmon", "bpf"/' classmap.h
-            #    else
-            #      sed -i '/COMMON_CAP2_PERMS/ s/"checkpoint_restore"/"bpf", "checkpoint_restore"/' classmap.h
-            #    fi
-            #    echo "Added \"bpf\" to COMMON_CAP2_PERMS in classmap.h"
-            #  else
-            #    echo "\"bpf\" already present in COMMON_CAP2_PERMS in classmap.h"
-            #  fi
+
+            # Ensure classmap.h includes "bpf" in COMMON_CAP2_PERMS
+            #if ! grep -q '"bpf"' "$SELINUX_INCLUDE_DIR/classmap.h"; then
+            #  sed -i '/COMMON_CAP2_PERMS/ s/"audit_read"/"audit_read", "bpf"/' "$SELINUX_INCLUDE_DIR/classmap.h"
+            #  echo "Added \"bpf\" to COMMON_CAP2_PERMS in classmap.h"
             #else
-            #  echo "Warning: classmap.h not found"
+            #echo "\"bpf\" already present in COMMON_CAP2_PERMS in classmap.h"
             #fi
+
+           # Print the contents of policycap.h and policycap_names.h for debugging
+          echo "Contents of policycap.h:"
+          cat "$SELINUX_INCLUDE_DIR/policycap.h"
+
+          echo "Contents of policycap_names.h:"
+          cat "$SELINUX_INCLUDE_DIR/policycap_names.h"
 
           else
             echo "Warning: SELinux policy include directory not found at expected location"
