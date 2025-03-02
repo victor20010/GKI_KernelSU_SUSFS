@@ -346,7 +346,7 @@ jobs:
 
           # Remove check_defconfig
           sed -i 's/check_defconfig//' ./common/build.config.gki
-
+          
       - name: Modify SELinux Policy for BPF Permission
         shell: bash
         run: |
@@ -371,7 +371,7 @@ jobs:
             else
               echo "Warning: policycap.h not found"
             fi
-
+            cat /common/security/selinux/include/policycap.h
             # Update policycap_names.h
             if [ -f "policycap_names.h" ]; then
               echo "Ensuring policycap_names.h includes \"bpf\" in the capability names array..."
@@ -384,29 +384,28 @@ jobs:
             else
               echo "Warning: policycap_names.h not found"
             fi
-
+            cat /common/security/selinux/include/policycap_names.h
             # Update classmap.h
-            if [ -f "classmap.h" ]; then
-              echo "Ensuring classmap.h includes \"bpf\" in COMMON_CAP2_PERMS..."
-              if ! grep -q '"bpf"' classmap.h; then
-                # Insert "bpf" after "perfmon" if found, otherwise insert before "checkpoint_restore"
-                if grep -q '"perfmon"' classmap.h; then
-                  sed -i '/COMMON_CAP2_PERMS/ s/"perfmon"/"perfmon", "bpf"/' classmap.h
-                else
-                  sed -i '/COMMON_CAP2_PERMS/ s/"checkpoint_restore"/"bpf", "checkpoint_restore"/' classmap.h
-                fi
-                echo "Added \"bpf\" to COMMON_CAP2_PERMS in classmap.h"
-              else
-                echo "\"bpf\" already present in COMMON_CAP2_PERMS in classmap.h"
-              fi
-            else
-              echo "Warning: classmap.h not found"
-            fi
+            #if [ -f "classmap.h" ]; then
+            #  echo "Ensuring classmap.h includes \"bpf\" in COMMON_CAP2_PERMS..."
+            #  if ! grep -q '"bpf"' classmap.h; then
+            #    # Insert "bpf" after "perfmon" if found, otherwise insert before "checkpoint_restore"
+            #    if grep -q '"perfmon"' classmap.h; then
+            #      sed -i '/COMMON_CAP2_PERMS/ s/"perfmon"/"perfmon", "bpf"/' classmap.h
+            #    else
+            #      sed -i '/COMMON_CAP2_PERMS/ s/"checkpoint_restore"/"bpf", "checkpoint_restore"/' classmap.h
+            #    fi
+            #    echo "Added \"bpf\" to COMMON_CAP2_PERMS in classmap.h"
+            #  else
+            #    echo "\"bpf\" already present in COMMON_CAP2_PERMS in classmap.h"
+            #  fi
+            #else
+            #  echo "Warning: classmap.h not found"
+            #fi
 
           else
             echo "Warning: SELinux policy include directory not found at expected location"
           fi
-
       
       - name: Config Kernel Name
         if: ${{ inputs.kernel_version == '5.10' || inputs.kernel_version == '5.15' || inputs.kernel_version == '6.1' }}
