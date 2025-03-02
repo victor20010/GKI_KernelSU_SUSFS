@@ -263,7 +263,7 @@ jobs:
           cd "$CONFIG/common"
           # Apply additional patch
           cp ../../kernel_patches/hooks/ksu_hooks.patch ./
-          cp ../../kernel_patches/next/new_hooks.patch ./
+          cp ../../kernel_patches/next/next_hooks.patch ./
           patch -p1 -F 3 < ksu_hooks.patch
           patch -p1 -F 3 < new_hooks.patch
           
