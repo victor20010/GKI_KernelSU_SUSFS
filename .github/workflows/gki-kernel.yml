@@ -262,8 +262,11 @@ jobs:
           echo "Changing to configuration directory: $CONFIG..."
           cd "$CONFIG/common"
           # Apply additional patch
-          cp ../../kernel_patches/hooks/new_hooks.patch ./
+          cp ../../kernel_patches/hooks/ksu_hooks.patch ./
+          cp ../../kernel_patches/next/new_hooks.patch ./
+          patch -p1 -F 3 < ksu_hooks.patch
           patch -p1 -F 3 < new_hooks.patch
+          
           
           
       - name: Apply Hide Stuff Patches
@@ -370,9 +373,9 @@ jobs:
           # Add bbrv3 config setting
           cp ../../kernel_patches/bbr/tcp_bbr.c ./net/ipv4/
           #
-          if [[ "${{ inputs.kernel_version }}" == "5.10" ]]; then
-            cp ../../kernel_patches/bbr/bbrv3-5.10.patch ./
-            patch -p1 -F 3 < bbrv3-5.10.patch
+          #if [[ "${{ inputs.kernel_version }}" == "5.10" ]]; then
+          #  cp ../../kernel_patches/bbr/bbrv3-5.10.patch ./
+          #  patch -p1 -F 3 < bbrv3-5.10.patch
           #else
           #  cp ../../kernel_patches/bbr/bbrv3-5.15+.patch ./
           #  patch -p1 -F 3 < bbrv3-5.15+.patch
