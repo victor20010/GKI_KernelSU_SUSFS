@@ -366,12 +366,12 @@ jobs:
           cat policycap_names.h
 
       
-      - name: Config Kernel Name
-        if: ${{ inputs.kernel_version == '5.10' || inputs.kernel_version == '5.15' || inputs.kernel_version == '6.1' }}
-        run: |
-          cd "$CONFIG/common"
+      #- name: Config Kernel Name
+        #if: ${{ inputs.kernel_version == '5.10' || inputs.kernel_version == '5.15' || inputs.kernel_version == '6.1' }}
+        #run: |
+          #cd "$CONFIG/common"
           # Add bbrv3 config setting
-          cp ../../kernel_patches/bbr/tcp_bbr.c ./net/ipv4/
+          #cp ../../kernel_patches/bbr/tcp_bbr.c ./net/ipv4/
           #
           #if [[ "${{ inputs.kernel_version }}" == "5.10" ]]; then
           #  cp ../../kernel_patches/bbr/bbrv3-5.10.patch ./
@@ -379,12 +379,12 @@ jobs:
           #else
           #  cp ../../kernel_patches/bbr/bbrv3-5.15+.patch ./
           #  patch -p1 -F 3 < bbrv3-5.15+.patch
-          fi
+          #fi
 
-          cd ..
-          echo "CONFIG_TCP_CONG_ADVANCED=y" >> ./common/arch/arm64/configs/gki_defconfig 
-          echo "CONFIG_TCP_CONG_BBR=y" >> ./common/arch/arm64/configs/gki_defconfig
-          echo "CONFIG_NET_SCH_FQ=y" >> ./common/arch/arm64/configs/gki_defconfig
+          #cd ..
+          #echo "CONFIG_TCP_CONG_ADVANCED=y" >> ./common/arch/arm64/configs/gki_defconfig 
+          #echo "CONFIG_TCP_CONG_BBR=y" >> ./common/arch/arm64/configs/gki_defconfig
+          #echo "CONFIG_NET_SCH_FQ=y" >> ./common/arch/arm64/configs/gki_defconfig
 
 
       - name: Config Kernel Name
