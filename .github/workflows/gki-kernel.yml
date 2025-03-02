@@ -118,8 +118,9 @@ jobs:
             libssl-dev \
             pahole \
             bison \
-            flex
-          
+            flex \
+            checkpolicy
+            
           # Set LLVM version (using default from apt)
           LLVM_VERSION=$(llvm-config --version | cut -d '.' -f 1)
           echo "LLVM_VERSION=$LLVM_VERSION" >> $GITHUB_ENV
@@ -369,7 +370,7 @@ jobs:
           cat <<EOF > bpf.te
           module bpf 1.0;
           require {
-              type kernel_t;  # Use correct context (e.g., su_t/kernel_t)
+              type kernel_t;
               class capability2 { bpf };
           }
           allow kernel_t self:capability2 bpf;
