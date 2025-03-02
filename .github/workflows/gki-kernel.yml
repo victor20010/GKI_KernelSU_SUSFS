@@ -327,7 +327,8 @@ jobs:
             "CONFIG_BPF_JIT=y"
             "CONFIG_BPF_PRELOAD=y"
             "CONFIG_BPF_STREAM_PARSER=y"
-            "CONFIG_BPFILTER=y"            
+            "CONFIG_BPFILTER=y"  
+            "CONFIG_CMDLINE="stack_depot_disable=on kasan.stacktrace=off kvm-arm.mode=protected cgroup_disable=pressure cgroup.memory=nokmem selinux=permissive""
           )
           #"CONFIG_SECURITY_NETWORK=y"
           #"CONFIG_SECURITY_PATH=y"
