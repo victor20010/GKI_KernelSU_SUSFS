@@ -317,8 +317,8 @@ jobs:
             "CONFIG_BPFILTER=y"            
             "CONFIG_SECURITY_NETWORK=y"
             "CONFIG_SECURITY_PATH=y"
-            "CONFIG_BPF_LSM=n"
-            #"CONFIG_LSM=\"lockdown,capability,yama,selinux,bpf\""
+            "CONFIG_BPF_LSM=y"
+            "CONFIG_LSM=\"lockdown,capability,yama,selinux,bpf\""
           )
 
           GKI_DECONFIG="./common/arch/arm64/configs/gki_defconfig"
@@ -360,23 +360,29 @@ jobs:
           echo -e "\npolicycap_names.h contents:"
           cat policycap_names.h
       
+          # Remove check_defconfig
+          sed -i 's/check_defconfig//' ./common/build.config.gki
+      
       - name: Config Kernel Name
         if: ${{ inputs.kernel_version == '5.10' || inputs.kernel_version == '5.15' || inputs.kernel_version == '6.1' }}
         run: |
           cd "$CONFIG/common"
           # Add bbrv3 config setting
-          cp ../../kernel_patches/bbr/tcp_bbr.c ./net/ipv4/
-          
-          if [[ "${{ inputs.kernel_version }}" == "5.10" ]]; then
-            cp ../../kernel_patches/bbr/bbrv3-5.10.patch ./
-            patch -p1 -F 3 < bbrv3-5.10.patch
-          else
-            cp ../../kernel_patches/bbr/bbrv3-5.15+.patch ./
-            patch -p1 -F 3 < bbrv3-5.15+.patch
-          fi
-          
+          #cp ../../kernel_patches/bbr/tcp_bbr.c ./net/ipv4/
+          #
+          #if [[ "${{ inputs.kernel_version }}" == "5.10" ]]; then
+          #  cp ../../kernel_patches/bbr/bbrv3-5.10.patch ./
+          #  patch -p1 -F 3 < bbrv3-5.10.patch
+          #else
+          #  cp ../../kernel_patches/bbr/bbrv3-5.15+.patch ./
+          #  patch -p1 -F 3 < bbrv3-5.15+.patch
+          #fi
+
+          echo "CONFIG_TCP_CONG_ADVANCED=y" >> ./arch/arm64/configs/gki_defconfig
           echo "CONFIG_TCP_CONG_BBR=y" >> ./arch/arm64/configs/gki_defconfig
           echo "CONFIG_NET_SCH_FQ=y" >> ./arch/arm64/configs/gki_defconfig
+          echo "CONFIG_DEFAULT_BBR=y" >> ./arch/arm64/configs/gki_defconfig
+          echo "CONFIG_DEFAULT_TCP_CONG=bbr" >> ./arch/arm64/configs/gki_defconfig
 
 
       - name: Config Kernel Name
@@ -387,7 +393,7 @@ jobs:
           sed -i '$s|echo "\$res"|echo "\$res-Wild+"|' ./common/scripts/setlocalversion
 
           # Run perl command to modify UTS_VERSION
-          perl -pi -e 's{UTS_VERSION="\$\(echo \$UTS_VERSION \$CONFIG_FLAGS \$TIMESTAMP \| cut -b -\$UTS_LEN\)"}{UTS_VERSION="#1 SMP PREEMPT Sat Apr 20 04:20:00 UTC 2024"}' ./common/scripts/mkcompile_[...]
+          perl -pi -e 's{UTS_VERSION="\$\(echo \$UTS_VERSION \$CONFIG_FLAGS \$TIMESTAMP \| cut -b -\$UTS_LEN\)"}{UTS_VERSION="#1 SMP PREEMPT Sat Apr 20 04:20:00 UTC 2024"}' ./common/scripts/mkcompile_h
 
           echo "Building the kernel..."
           if [ -f "build/build.sh" ]; then
