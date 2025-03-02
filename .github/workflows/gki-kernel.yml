@@ -256,25 +256,15 @@ jobs:
           # Change to common directory and apply common SUSFS patch
           cd ../common
           patch -p1 < 50_add_susfs_in_gki-${{ inputs.android_version }}-${{ inputs.kernel_version }}.patch || true
-
+     
       - name: Apply New Hooks Patches
         run: |
           echo "Changing to configuration directory: $CONFIG..."
           cd "$CONFIG/common"
-
-          if [ "${{ inputs.kernelsu_variant }}" == "Official" ]; then
-            echo "Applying hooks for Official KernelSU..."
-            cp ../../kernel_patches/hooks/ksu_hooks.patch ./
-            patch -p1 -F 3 < ksu_hooks.patch
-          elif [ "${{ inputs.kernelsu_variant }}" == "Next" ]; then
-            echo "Applying hooks for KernelSU-Next..."
-            cp ../../kernel_patches/next/next_hooks.patch ./
-            patch -p1 -F 3 < next_hooks.patch
-          elif [ "${{ inputs.kernelsu_variant }}" == "MKSU" ]; then
-            echo "Applying hooks for MKSU..."
-            cp ../../kernel_patches/hooks/ksu_hooks.patch ./
-            patch -p1 -F 3 < ksu_hooks.patch
-          fi
+          # Apply additional patch
+          cp ../../kernel_patches/new_hooks.patch ./
+          patch -p1 -F 3 < new_hooks.patch
+          
           
       - name: Apply Hide Stuff Patches
         run: |
@@ -373,25 +363,25 @@ jobs:
           cat policycap_names.h
 
       
-      #- name: Config Kernel Name
-        #if: ${{ inputs.kernel_version == '5.10' || inputs.kernel_version == '5.15' || inputs.kernel_version == '6.1' }}
-        #run: |
-          #cd "$CONFIG/common"
+      - name: Config Kernel Name
+        if: ${{ inputs.kernel_version == '5.10' || inputs.kernel_version == '5.15' || inputs.kernel_version == '6.1' }}
+        run: |
+          cd "$CONFIG/common"
           # Add bbrv3 config setting
-          #cp ../../kernel_patches/bbr/tcp_bbr.c ./net/ipv4/
+          cp ../../kernel_patches/bbr/tcp_bbr.c ./net/ipv4/
           #
-          #if [[ "${{ inputs.kernel_version }}" == "5.10" ]]; then
-          #  cp ../../kernel_patches/bbr/bbrv3-5.10.patch ./
-          #  patch -p1 -F 3 < bbrv3-5.10.patch
+          if [[ "${{ inputs.kernel_version }}" == "5.10" ]]; then
+            cp ../../kernel_patches/bbr/bbrv3-5.10.patch ./
+            patch -p1 -F 3 < bbrv3-5.10.patch
           #else
           #  cp ../../kernel_patches/bbr/bbrv3-5.15+.patch ./
           #  patch -p1 -F 3 < bbrv3-5.15+.patch
-          #fi
+          fi
 
-          #cd ..
-          #echo "CONFIG_TCP_CONG_ADVANCED=y" >> ./common/arch/arm64/configs/gki_defconfig 
-          #echo "CONFIG_TCP_CONG_BBR=y" >> ./common/arch/arm64/configs/gki_defconfig
-          #$echo "CONFIG_NET_SCH_FQ=y" >> ./common/arch/arm64/configs/gki_defconfig
+          cd ..
+          echo "CONFIG_TCP_CONG_ADVANCED=y" >> ./common/arch/arm64/configs/gki_defconfig 
+          echo "CONFIG_TCP_CONG_BBR=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_NET_SCH_FQ=y" >> ./common/arch/arm64/configs/gki_defconfig
 
 
       - name: Config Kernel Name
