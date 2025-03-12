@@ -109,17 +109,10 @@ jobs:
           echo "MKBOOTIMG=$GITHUB_WORKSPACE/mkbootimg/mkbootimg.py" >> $GITHUB_ENV
           echo "UNPACK_BOOTIMG=$GITHUB_WORKSPACE/mkbootimg/unpack_bootimg.py" >> $GITHUB_ENV
 
-      - name: Set boot sign key
-        env:
-          BOOT_SIGN_KEY: ${{ secrets.BOOT_SIGN_KEY }}
+      - name: Generate boot sign key
         run: |
-          if [ ! -z "$BOOT_SIGN_KEY" ]; then
-            echo "$BOOT_SIGN_KEY" > ./kernel-build-tools/linux-x86/share/avb/testkey_rsa2048.pem
-            echo "BOOT_SIGN_KEY_PATH=$GITHUB_WORKSPACE/kernel-build-tools/linux-x86/share/avb/testkey_rsa2048.pem" >> $GITHUB_ENV
-          else
-            echo "BOOT_SIGN_KEY is not set. Exiting..."
-            exit 1
-          fi
+          openssl genpkey -algorithm RSA -out ./kernel-build-tools/linux-x86/share/avb/testkey_rsa2048.pem -pkeyopt rsa_keygen_bits:2048
+          echo "BOOT_SIGN_KEY_PATH=$GITHUB_WORKSPACE/kernel-build-tools/linux-x86/share/avb/testkey_rsa2048.pem" >> $GITHUB_ENV
 
       - name: Install Repo
         run: |
@@ -325,7 +318,18 @@ jobs:
           echo "CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS=y" >> ./common/arch/arm64/configs/gki_defconfig
           echo "CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG=y" >> ./common/arch/arm64/configs/gki_defconfig
           echo "CONFIG_KSU_SUSFS_OPEN_REDIRECT=y" >> ./common/arch/arm64/configs/gki_defconfig
-
+          echo "CONFIG_KSU_DEBUG=y"  >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_KSU_DEBUG=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_DEBUG_INFO=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_DEBUG_FS=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_DEBUG_KERNEL=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_SECURITYFS=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_SECURITY_SELINUX_DISABLE=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_SECURITY_APPARMOR=n" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_KALLSYMS=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_KALLSYMS_ALL=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_FTRACE=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_FUNCTION_TRACER=y" >> ./common/arch/arm64/configs/gki_defconfig
           if [ "${{ inputs.kernelsu_variant }}" == "Next" ]; then
             echo "CONFIG_KSU_SUSFS_SUS_SU=n" >> ./common/arch/arm64/configs/gki_defconfig
           else
