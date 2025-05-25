@@ -169,7 +169,7 @@ jobs:
       - name: Get current date
         id: date
         run: |
-          echo "currentdate={$(date +'%Y-%m-%d')}" >> $GITHUB_ENV
+          echo "currentdate=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
 
       # Checkout the code
       - name: Checkout code
