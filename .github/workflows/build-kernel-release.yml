@@ -169,7 +169,7 @@ jobs:
       - name: Get current date
         id: date
         run: |
-          echo "{date}={$(date +'%Y-%m-%d')}" >> $GITHUB_STATE
+          echo "currentdate={$(date +'%Y-%m-%d')}" >> $GITHUB_ENV
 
       # Checkout the code
       - name: Checkout code
@@ -313,7 +313,7 @@ jobs:
           fi
 
           # NEW_TAG=$(echo "$LATEST_TAG" | awk -F'-r' '{suffix=$2; if (!suffix) suffix=0; suffix++; printf "%s-r%d", $1, suffix}')
-          NEW_TAG=${{ env.date }}
+          NEW_TAG=${{ env.currentdate }}
 
           # Output the new tag to be used
           echo "New tag: $NEW_TAG"
@@ -335,9 +335,9 @@ jobs:
       - name: Create GitHub Release
         uses: actions/create-release@v1
         with:
-          tag_name: ${{ env.date }} # Use the generated tag for the release
+          tag_name: ${{ env.currentdate }} # Use the generated tag for the release
           prerelease: true # Mark the release as a pre-release
-          release_name: ${{ env.date }} # Pass the RELEASE_NAME to the action
+          release_name: ${{ env.currentdate }} # Pass the RELEASE_NAME to the action
           body: ${{ env.RELEASE_NOTES }} # Pass the RELEASE_NOTES to the action
 
       - name: Upload Release Assets Dynamically
