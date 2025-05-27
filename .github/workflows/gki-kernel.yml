@@ -244,8 +244,9 @@ jobs:
           echo "Changing to configuration directory: $CONFIG..."
           cd "$CONFIG/common"
           # Apply additional patch
-          #cp ../../SukiSU_patch/69_hide_stuff.patch ./
-          #patch -p1 -F 3 < 69_hide_stuff.patch
+
+          cp ../../SukiSU_patch/69_hide_stuff.patch ./
+          patch -p1 -F 3 < 69_hide_stuff.patch
 
       # - name: 复制源文件&应用LZ4KD&ZSTDN补丁
       #   run: |
