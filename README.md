@@ -1,90 +1,93 @@
-### 这是一个自动构建GKI内核的仓库
+### Это репозиторий для автоматической сборки GKI ядра
 
-> 非GKI可以尝试[SukiSU云盘](https://alist.shirkneko.top)的资源
-> 第一次使用务必**详细阅读**以下内容，不要因为懒惰而占用他人时间！
-### 下载
-可以[在此](https://github.com/zzh20188/GKI_KernelSU_SUSFS/releases)下载您的资源
-1. 关于Anykernel3.zip，下载即用！
-- 然后使用刷入软件，例如[HorizonKernelFlasher](https://github.com/libxzr/HorizonKernelFlasher/releases)进行刷写内核
-2. 关于boot.img，下载与你内核格式相匹配的（无压缩、gz、lz4），[参考](https://kernelsu.org/zh_CN/guide/installation.html#install-by-kernelsu-boot-image) **找到合适的 boot.img** 一节
-- 使用[FASTBOOT](https://magiskcn.com/)刷入，或者使用刷写软件刷写到ROOT所在插槽的boot分区(例如爱玩机、Kernelflasher)
+> Для не-GKI можно попробовать ресурсы [SukiSU облачного диска](https://alist.shirkneko.top)
+> При первом использовании обязательно **внимательно прочитайте** следующее содержимое, не занимайте время других из-за лени!
 
-### 支持
-| 功能 | 说明 |
+### Загрузка
+Вы можете [скачать здесь](https://github.com/zzh20188/GKI_KernelSU_SUSFS/releases) ваши ресурсы
+1. Относительно Anykernel3.zip - скачивайте и используйте!
+- Затем используйте программу для прошивки, например [HorizonKernelFlasher](https://github.com/libxzr/HorizonKernelFlasher/releases) для прошивки ядра
+2. Относительно boot.img - скачивайте соответствующий формату вашего ядра (без сжатия, gz, lz4), [справка](https://kernelsu.org/zh_CN/guide/installation.html#install-by-kernelsu-boot-image) **найдите подходящий boot.[...]
+- Используйте [FASTBOOT](https://magiskcn.com/) для прошивки, или используйте программы прошивки для записи в boot раздел слота где находится ROOT (например, 爱玩机, Kernelflasher)
+
+### Поддержка
+| Функция | Описание |
 | --- | --- |
-| [KernelSU](https://kernelsu.org/zh_CN/) | 包括**原版、MKSU、SUKISU、NEXT** |
-| [SUSFS4](https://gitlab.com/simonpunk/susfs4ksu) | 在内核层面辅助KSU隐藏的功能补丁 |
-| [BBR](https://blog.thinkin.top/archives/ke-pu-bbrdao-di-shi-shi-me) | TCP拥塞控制算法，使网络更快？ |
-| [Wireguard](https://zh.wikipedia.org/wiki/WireGuard) | 参考左侧wiki链接 |
-| [LZ4KD](https://github.com/ShirkNeko/SukiSU_patch/tree/main/other) | 听说是来自HUAWEI source的ZRAM算法，补丁由[云彩之枫](http://www.coolapk.com/u/24963680)移植 |
+| [KernelSU](https://kernelsu.org/zh_CN/) | Включает **оригинальную, MKSU, SUKISU, NEXT** |
+| [SUSFS4](https://gitlab.com/simonpunk/susfs4ksu) | Патч функции помощи скрытия KSU на уровне ядра |
+| [BBR](https://blog.thinkin.top/archives/ke-pu-bbrdao-di-shi-shi-me) | Алгоритм контроля перегрузки TCP, делает сеть быстрее? |
+| [Wireguard](https://zh.wikipedia.org/wiki/WireGuard) | См. ссылку на wiki слева |
+| [LZ4KD](https://github.com/ShirkNeko/SukiSU_patch/tree/main/other) | Говорят, это алгоритм ZRAM из исходников HUAWEI, патч портирован [云彩之枫](http://www.coolapk.com/u/24963680) |
 
 <details>
 
-<summary>还支持这几种算法，可在scene的ZRAM切换</summary>
+<summary>Также поддерживает эти несколько алгоритмов, можно переключать в ZRAM в scene</summary>
 
-### LZ4K、LZ4HC、deflate、842、~~zstdn~~、lz4k_oplus
+### LZ4K, LZ4HC, deflate, 842, ~~zstdn~~, lz4k_oplus
 
 </details>
 
-### KSU管理器
-在编译完成后，你会看到类似 `Next-Manager(12600)`的文件，简单来说这就是与内核一同上传的***最新管理器***。
-![例子](./assets/get_manager.gif)
-同样的，在[Release](https://github.com/zzh20188/GKI_KernelSU_SUSFS/releases)也同样包含***最新管理器***！
+### Менеджер KSU
+После завершения компиляции вы увидите файл типа `Next-Manager(12600)`, проще говоря - это ***последний менеджер***, загруженный вместе с ядром.
+![Пример](./assets/get_manager.gif)
+Аналогично, в [Release](https://github.com/zzh20188/GKI_KernelSU_SUSFS/releases) также содержится ***последний менеджер***!
 ![release](./assets/release_manager.gif)
 
-### 紧急救援指南
+### Руководство по экстренному восстановлению
 
 > [!IMPORTANT]
-> **触发条件**  
-> 当设备因以下原因无法启动时需执行救援：  
-> - 刷入错误/不兼容的内核
-> - 内核版本适配异常（如5.10.66刷233版本的内核）
-1. 进入FASTBOOT模式
+> **Условия срабатывания**  
+> Когда устройство не может загрузиться по следующим причинам, необходимо выполнить восстановление:  
+> - Прошивка неправильного/несовместимого ядра
+> - Исключение совместимости версии ядра (например, прошивка ядра версии 233 на 5.10.66)
 
-- 物理键组合：电源+音量- 或者 ADB命令： `adb reboot bootloader`
+1. Войти в режим FASTBOOT
 
-2. 执行刷写命令
+- Комбинация физических клавиш: питание + громкость- или команда ADB: `adb reboot bootloader`
+
+2. Выполнить команду прошивки
 ```bash
-$ fastboot flash boot <boot.img文件全称>
+$ fastboot flash boot <полное_имя_файла_boot.img>
 ```
-### 原版镜像获取途径
-1. 从现有固件提取
 
-- 卡刷包：解压后使用[payload-dumper工具](https://magiskcn.com/payload-dumper-go-boot.html)
+### Пути получения оригинального образа
+1. Извлечение из существующей прошивки
 
-- 线刷包：直接解压获取boot.img
+- Пакет для прошивки через recovery: распакуйте и используйте [инструмент payload-dumper](https://magiskcn.com/payload-dumper-go-boot.html)
 
-2.外部资源获取
+- Пакет для прошивки через fastboot: напрямую распакуйте для получения boot.img
 
-- 社区平台搜索：机型+原厂boot (如XDA/酷安)
+2. Получение из внешних ресурсов
 
-- [移动端在线提取远程获取](https://magiskcn.com/payload-dumper-compose.html)
+- Поиск на платформах сообщества: модель + оригинальный boot (например XDA/酷安)
+
+- [Онлайн извлечение на мобильном устройстве удаленное получение](https://magiskcn.com/payload-dumper-compose.html)
 
 > [!TIP]
-> ### 内核版本兼容性说明
+> ### Объяснение совместимости версий ядра
 > 
-> **1. 跨子版本刷机规则**  
-> 当手机GKI主版本为5.10.x时（如5.10.168），可刷写同主版本更高子版本的内核（如5.10.198）。  
-> 关于**X-lts**版本，以 `android12-5.10.X-lts-AnyKernel3.zip` 为例：
-> - **X-lts** 表示长期支持版（子版本号最大，当前示例为5.10.236）
-> - LTS随着GKI源码更新，编译版本号将持续递增（其他如198的版本，是永久固定的）
-> - ⚠️ 注意：LTS虽为最新，**但**最新版≠最稳定（如6.6.x存在自动重启BUG）
+> **1. Правила прошивки между подверсиями**  
+> Когда основная версия GKI телефона 5.10.x (например 5.10.168), можно прошивать ядро с более высокой подверсией той же основной версии (например 5.10.198).  
+> Относительно версии **X-lts**, на примере `android12-5.10.X-lts-AnyKernel3.zip`:
+> - **X-lts** означает версию долгосрочной поддержки (максимальный номер подверсии, в текущем примере 5.10.236)
+> - LTS будет продолжать увеличивать номер версии компиляции с обновлением исходного кода GKI (другие версии как 198 фиксированы навсегда)
+> - ⚠️ Внимание: хотя LTS самая новая, **но** новейшая версия ≠ самая стабильная (например, 6.6.x имеет баг автоматической перезагрузки)
 > 
-> **2. 内核版本伪装方法**  
-> 在MT管理器终端执行：
+> **2. Метод маскировки версии ядра**  
+> Выполните в терминале MT менеджера:
 > ```bash
 > uname -r
 > ```
-> 获取当前内核版本号，将此版本号填入Action编译面板即可实现内核版本伪装。
+> Получите текущий номер версии ядра, введите этот номер версии в панель компиляции Action для реализации маскировки версии ядра.
 > 
-> **3. 编译优化建议**  
-> 修改 [workflow配置文件](https://github.com/zzh20188/GKI_KernelSU_SUSFS/tree/dev/.github/workflows)（如kernel-a12-5.10.yml）：
-> - ▶️ 删除/注释不需要的GKI版本配置（**加速编译**）
-> - ➕ 添加指定GKI版本（参考[定制指南](https://www.coolapk.com/feed/62820671?shareKey=OGMxYmZmNTk0YzIxNjgxNzM1MzI~&shareUid=11253396&shareFrom=com.coolapk.market_15.2.2)）
+> **3. Рекомендации по оптимизации компиляции**  
+> Измените [файл конфигурации workflow](https://github.com/zzh20188/GKI_KernelSU_SUSFS/tree/dev/.github/workflows) (например kernel-a12-5.10.yml):
+> - ▶️ Удалите/закомментируйте ненужные конфигурации версий GKI (**ускорение компиляции**)
+> - ➕ Добавьте указанную версию GKI (см. [руководство по настройке](https://www.coolapk.com/feed/62820671?shareKey=OGMxYmZmNTk0YzIxNjgxNzM1MzI~&shareUid=11253396&shareFrom=com.coolapk.market_15.2.2))
 > 
-> **4. 已知兼容性问题**  
-> - 部分GKI版本（如5.10.66）在 `ubuntu-latest` 环境编译失败
-> - 6.6.x内核暂不支持KPM补丁（存在兼容性问题）
+> **4. Известные проблемы совместимости**  
+> - Некоторые версии GKI (например 5.10.66) не компилируются в среде `ubuntu-latest`
+> - Ядро 6.6.x временно не поддерживает патчи KPM (есть проблемы совместимости)
 
-### 更多内容
-可以提及您的意见...我会尝试！
+### Дополнительный контент
+Можете высказать ваши мнения... Я попробую!
