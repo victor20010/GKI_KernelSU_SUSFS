@@ -149,7 +149,7 @@ jobs:
 
         Features:
         - ${{ inputs.kernelsu_variant }} (${{ inputs.kernelsu_branch }})
-        - **ඞ** SUSFS v1.5.7
+        - **ඞ** SUSFS
         - Manual Syscall Hooks
         - Wireguard Support
         - Futile Maphide for jit-zygote-cache Detections
