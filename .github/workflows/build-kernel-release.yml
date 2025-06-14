@@ -196,7 +196,7 @@ jobs:
           if [ "${{ inputs.kernelsu_variant }}" == "SukiSU" ]; then
             echo "This is the SukiSU variant"
             REPO_URL="https://github.com/SukiSU-Ultra/SukiSU-Ultra.git"
-            REPO_URL2="ShirkNeko/KernelSU"
+            REPO_URL2="SukiSU-Ultra/SukiSU-Ultra"
           else
             echo "Unknown variant"
           fi
