@@ -152,7 +152,7 @@ jobs:
         - **ඞ** SUSFS
         - Manual Syscall Hooks
         - Wireguard Support
-        - Futile Maphide for jit-zygote-cache Detections
+        - BBR Support
 
         Usage: 
           - Use [HorizonKernelFlasher](https://github.com/libxzr/HorizonKernelFlasher). Don't use Kernel Flasher, it is broken.
