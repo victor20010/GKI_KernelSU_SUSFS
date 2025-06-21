@@ -42,7 +42,7 @@ jobs:
       CCACHE_COMPILERCHECK: "%compiler% -dumpmachine; %compiler% -dumpversion"
       CCACHE_NOHASHDIR: "true"
       CCACHE_HARDLINK: "true"
-      ZRAM: "true"
+      ZRAM: "false"
 
     steps:
       - name: Maximize build space
